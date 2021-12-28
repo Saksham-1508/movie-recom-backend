@@ -1,10 +1,9 @@
-from typing import Mapping
 from flask import Flask, jsonify
 from flask_cors import CORS
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import difflib
+from numpy import random
 import requests
 import json
 df = pd.read_csv('final_movies.csv')
@@ -42,15 +41,16 @@ def get_ids(moviename):
 
 @app.route("/similarity/<string:imdb_id>")
 def get_movie_similarity(imdb_id):
-    movie = df.loc[df['imdb_title_id'] == imdb_id]
+    imdb = imdb_id
+    movie = df.loc[df['imdb_title_id'] == imdb]
     if len(movie) == 0:
-        return jsonify(None)
+        imdb = random.choice(list(df['imdb_title_id']))
     try:
         similarity.shape
     except:
         similarity = get_similarity()
     
-    name = (df.loc[df['imdb_title_id'] == imdb_id]).original_title.values[0]
+    name = (df.loc[df['imdb_title_id'] == imdb]).original_title.values[0]
     closest_index = df[df['original_title'] == name].index.values[0]
     similarity_score = list(enumerate(similarity[closest_index]))
     # print(similarity_score)
