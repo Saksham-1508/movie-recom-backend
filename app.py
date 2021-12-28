@@ -9,11 +9,11 @@ import json
 df = pd.read_csv('final_movies.csv')
 app = Flask(__name__)
 CORS(app)
-def get_similarity():
+def get_similarity(index):
     vectorizer = TfidfVectorizer()
     feature_vectors = vectorizer.fit_transform(df['comb'])
     similarity = cosine_similarity(feature_vectors)
-    return similarity
+    return similarity[index]
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
@@ -45,14 +45,13 @@ def get_movie_similarity(imdb_id):
     movie = df.loc[df['imdb_title_id'] == imdb]
     if len(movie) == 0:
         imdb = random.choice(list(df['imdb_title_id']))
-    try:
-        similarity.shape
-    except:
-        similarity = get_similarity()
-    
     name = (df.loc[df['imdb_title_id'] == imdb]).original_title.values[0]
     closest_index = df[df['original_title'] == name].index.values[0]
-    similarity_score = list(enumerate(similarity[closest_index]))
+    try:
+        len(similarity)
+    except:
+        similarity = get_similarity(closest_index)
+    similarity_score = list(enumerate(similarity))
     # print(similarity_score)
     sorted_score = sorted(similarity_score, key=lambda x: x[1], reverse=True)
     # print(sorted_score)
@@ -80,4 +79,4 @@ def get_movie_similarity(imdb_id):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
